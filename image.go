@@ -57,11 +57,13 @@ func (c *Client) CreateImage(ctx context.Context, request ImageRequest) (respons
 
 // ImageEditRequest represents the request structure for the image API.
 type ImageEditRequest struct {
-	Image  *os.File `json:"image,omitempty"`
-	Mask   *os.File `json:"mask,omitempty"`
-	Prompt string   `json:"prompt,omitempty"`
-	N      int      `json:"n,omitempty"`
-	Size   string   `json:"size,omitempty"`
+	ImageName string
+	Image     io.Reader `json:"image,omitempty"`
+	MaskName  string
+	Mask      io.Reader `json:"mask,omitempty"`
+	Prompt    string    `json:"prompt,omitempty"`
+	N         int       `json:"n,omitempty"`
+	Size      string    `json:"size,omitempty"`
 }
 
 // CreateEditImage - API call to create an image. This is the main endpoint of the DALL-E API.
@@ -70,7 +72,7 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 	writer := multipart.NewWriter(body)
 
 	// image
-	image, err := writer.CreateFormFile("image", request.Image.Name())
+	image, err := writer.CreateFormFile("image", request.ImageName)
 	if err != nil {
 		return
 	}
@@ -81,7 +83,7 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 
 	// mask, it is optional
 	if request.Mask != nil {
-		mask, err2 := writer.CreateFormFile("mask", request.Mask.Name())
+		mask, err2 := writer.CreateFormFile("mask", request.MaskName)
 		if err2 != nil {
 			return
 		}
